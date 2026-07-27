@@ -1,0 +1,14 @@
+# RefIndia
+# Indian Academic & Legal Citation Generator and Converter
+#
+# Copyright © 2026 RatioJuris
+# Licensed under The Open Journal License (TOJL)
+#
+# Project URL:
+# https://ratiojuris.github.io/refIndia/
+
+User-agent: *
+Allow: /
+
+# Future sitemap
+# Sitemap: https://ratiojuris.github.io/refIndia/sitemap.xml
