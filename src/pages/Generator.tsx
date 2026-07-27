@@ -1,21 +1,28 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   BookOpen,
   FileText,
   GraduationCap,
   Scale,
+  FileBadge,
+  ScrollText,
+  Copy,
 } from "lucide-react";
 
-const citationTypes = [
+const SOURCE_TYPES = [
+  "Book",
   "Journal Article",
   "Research Paper",
-  "Book",
+  "Conference Paper",
   "Thesis",
   "Dissertation",
   "Case Law",
+  "Statute",
+  "Government Report",
+  "Web Resource",
 ];
 
-const citationStyles = [
+const CITATION_STYLES = [
   "APA 7th",
   "Harvard",
   "ILI",
@@ -26,106 +33,122 @@ const citationStyles = [
 ];
 
 export default function Generator() {
-  const [citationType, setCitationType] = useState("Journal Article");
-  const [citationStyle, setCitationStyle] = useState("APA 7th");
+  const [sourceType, setSourceType] = useState("Book");
+  const [style, setStyle] = useState("APA 7th");
 
   const [author, setAuthor] = useState("");
   const [title, setTitle] = useState("");
   const [publisher, setPublisher] = useState("");
+  const [journal, setJournal] = useState("");
   const [year, setYear] = useState("");
+  const [volume, setVolume] = useState("");
+  const [issue, setIssue] = useState("");
+  const [pages, setPages] = useState("");
 
-  const [result, setResult] = useState("");
+  const citation = useMemo(() => {
+    if (!author || !title) return "";
 
-  const generateCitation = () => {
-    let citation = "";
-
-    switch (citationStyle) {
+    switch (style) {
       case "APA 7th":
-        citation = `${author} (${year}). ${title}. ${publisher}.`;
-        break;
+        return `${author} (${year}). ${title}. ${
+          journal || publisher
+        }. ${volume ? `${volume}` : ""}${
+          issue ? `(${issue})` : ""
+        }${pages ? `, ${pages}` : ""}.`;
 
       case "Harvard":
-        citation = `${author} (${year}) ${title}. ${publisher}.`;
-        break;
+        return `${author} (${year}) ${title}. ${
+          journal || publisher
+        }.`;
 
       case "ILI":
-        citation = `${author}, ${title} (${publisher}, ${year}).`;
-        break;
+        return `${author}, ${title} (${publisher || journal}, ${year}).`;
 
       case "Oxford (OSCOLA)":
-        citation = `${author}, ${title} (${publisher} ${year}).`;
-        break;
+        return `${author}, ${title} (${publisher || journal} ${year}).`;
 
       case "MLA 9th":
-        citation = `${author}. ${title}. ${publisher}, ${year}.`;
-        break;
+        return `${author}. ${title}. ${
+          publisher || journal
+        }, ${year}.`;
 
       case "IEEE":
-        citation = `${author}, "${title}," ${publisher}, ${year}.`;
-        break;
+        return `${author}, "${title}," ${
+          journal || publisher
+        }, ${year}.`;
 
       case "Chicago":
-        citation = `${author}. ${title}. ${publisher}, ${year}.`;
-        break;
+        return `${author}. ${title}. ${
+          publisher || journal
+        }, ${year}.`;
 
       default:
-        citation = `${author} ${title}`;
+        return "";
     }
-
-    setResult(citation);
-  };
+  }, [
+    author,
+    title,
+    publisher,
+    journal,
+    year,
+    volume,
+    issue,
+    pages,
+    style,
+  ]);
 
   const copyCitation = async () => {
-    if (!result) return;
-
-    await navigator.clipboard.writeText(result);
-    alert("Citation copied to clipboard.");
+    if (!citation) return;
+    await navigator.clipboard.writeText(citation);
+    alert("Citation copied successfully.");
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 py-12">
-      <div className="max-w-5xl mx-auto px-6">
-        <h1 className="text-4xl font-bold text-center mb-2">
-          Citation Generator
-        </h1>
+    <main className="min-h-screen bg-slate-50 py-10">
+      <div className="max-w-6xl mx-auto px-6">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold text-slate-900">
+            Citation Generator
+          </h1>
 
-        <p className="text-center text-gray-600 mb-10">
-          Generate academic and legal citations in APA, Harvard,
-          ILI, OSCOLA, MLA, IEEE and Chicago formats.
-        </p>
+          <p className="mt-3 text-slate-600">
+            Generate academic and legal citations in APA, Harvard,
+            ILI, Oxford (OSCOLA), MLA, IEEE and Chicago styles.
+          </p>
+        </div>
 
+        {/* Form */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Citation Type */}
             <div>
               <label className="block mb-2 font-medium">
-                Citation Type
+                Resource Type
               </label>
 
               <select
-                value={citationType}
-                onChange={(e) => setCitationType(e.target.value)}
+                value={sourceType}
+                onChange={(e) => setSourceType(e.target.value)}
                 className="w-full border rounded-lg p-3"
               >
-                {citationTypes.map((type) => (
-                  <option key={type}>{type}</option>
+                {SOURCE_TYPES.map((item) => (
+                  <option key={item}>{item}</option>
                 ))}
               </select>
             </div>
 
-            {/* Citation Style */}
             <div>
               <label className="block mb-2 font-medium">
                 Citation Style
               </label>
 
               <select
-                value={citationStyle}
-                onChange={(e) => setCitationStyle(e.target.value)}
+                value={style}
+                onChange={(e) => setStyle(e.target.value)}
                 className="w-full border rounded-lg p-3"
               >
-                {citationStyles.map((style) => (
-                  <option key={style}>{style}</option>
+                {CITATION_STYLES.map((item) => (
+                  <option key={item}>{item}</option>
                 ))}
               </select>
             </div>
@@ -134,7 +157,7 @@ export default function Generator() {
           <div className="grid md:grid-cols-2 gap-6 mt-6">
             <div>
               <label className="block mb-2 font-medium">
-                Author
+                Author / Editor
               </label>
 
               <input
@@ -142,7 +165,7 @@ export default function Generator() {
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
                 className="w-full border rounded-lg p-3"
-                placeholder="Author name"
+                placeholder="Enter author name"
               />
             </div>
 
@@ -170,13 +193,13 @@ export default function Generator() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full border rounded-lg p-3"
-                placeholder="Publication title"
+                placeholder="Enter title"
               />
             </div>
 
-            <div className="md:col-span-2">
+            <div>
               <label className="block mb-2 font-medium">
-                Publisher / Journal / Institution
+                Publisher / Institution
               </label>
 
               <input
@@ -184,65 +207,118 @@ export default function Generator() {
                 value={publisher}
                 onChange={(e) => setPublisher(e.target.value)}
                 className="w-full border rounded-lg p-3"
-                placeholder="Journal, Publisher or University"
               />
             </div>
-          </div>
 
-          <div className="flex gap-4 mt-8">
-            <button
-              onClick={generateCitation}
-              className="bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-800"
-            >
-              Generate Citation
-            </button>
+            <div>
+              <label className="block mb-2 font-medium">
+                Journal
+              </label>
 
-            <button
-              onClick={copyCitation}
-              className="border border-blue-700 text-blue-700 px-6 py-3 rounded-lg hover:bg-blue-50"
-            >
-              Copy Citation
-            </button>
+              <input
+                type="text"
+                value={journal}
+                onChange={(e) => setJournal(e.target.value)}
+                className="w-full border rounded-lg p-3"
+              />
+            </div>
+
+            <div>
+              <label className="block mb-2 font-medium">
+                Volume
+              </label>
+
+              <input
+                type="text"
+                value={volume}
+                onChange={(e) => setVolume(e.target.value)}
+                className="w-full border rounded-lg p-3"
+              />
+            </div>
+
+            <div>
+              <label className="block mb-2 font-medium">
+                Issue
+              </label>
+
+              <input
+                type="text"
+                value={issue}
+                onChange={(e) => setIssue(e.target.value)}
+                className="w-full border rounded-lg p-3"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block mb-2 font-medium">
+                Pages
+              </label>
+
+              <input
+                type="text"
+                value={pages}
+                onChange={(e) => setPages(e.target.value)}
+                className="w-full border rounded-lg p-3"
+                placeholder="1-25"
+              />
+            </div>
           </div>
         </div>
 
         {/* Output */}
-        <div className="bg-white rounded-2xl shadow-lg mt-10 p-8">
-          <h2 className="text-2xl font-semibold mb-4">
-            Generated Citation
-          </h2>
+        <div className="bg-white rounded-2xl shadow-lg p-8 mt-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold">
+              Generated Citation
+            </h2>
 
-          {result ? (
-            <div className="bg-slate-100 rounded-lg p-4 break-words">
-              {result}
+            {citation && (
+              <button
+                onClick={copyCitation}
+                className="flex items-center gap-2 text-blue-700"
+              >
+                <Copy size={18} />
+                Copy
+              </button>
+            )}
+          </div>
+
+          {citation ? (
+            <div className="bg-slate-100 p-4 rounded-lg break-words">
+              {citation}
             </div>
           ) : (
-            <p className="text-gray-500">
-              Your generated citation will appear here.
+            <p className="text-slate-500">
+              Complete the form to generate a citation.
             </p>
           )}
         </div>
 
-        {/* Quick Access */}
-        <div className="grid md:grid-cols-4 gap-6 mt-10">
-          <div className="bg-white p-5 rounded-xl shadow">
-            <BookOpen className="mb-3 text-blue-700" />
-            <h3 className="font-semibold">Books</h3>
+        {/* Resource Types */}
+        <div className="grid md:grid-cols-5 gap-5 mt-8">
+          <div className="bg-white p-4 rounded-xl shadow">
+            <BookOpen className="mb-2 text-blue-700" />
+            <p className="font-medium">Books</p>
           </div>
 
-          <div className="bg-white p-5 rounded-xl shadow">
-            <FileText className="mb-3 text-blue-700" />
-            <h3 className="font-semibold">Journals</h3>
+          <div className="bg-white p-4 rounded-xl shadow">
+            <FileText className="mb-2 text-blue-700" />
+            <p className="font-medium">Journals</p>
           </div>
 
-          <div className="bg-white p-5 rounded-xl shadow">
-            <GraduationCap className="mb-3 text-blue-700" />
-            <h3 className="font-semibold">Thesis</h3>
+          <div className="bg-white p-4 rounded-xl shadow">
+            <GraduationCap className="mb-2 text-blue-700" />
+            <p className="font-medium">Theses</p>
           </div>
 
-          <div className="bg-white p-5 rounded-xl shadow">
-            <Scale className="mb-3 text-blue-700" />
-            <h3 className="font-semibold">Case Law</h3>
+          <div className="bg-white p-4 rounded-xl shadow">
+            <Scale className="mb-2 text-blue-700" />
+            <p className="font-medium">Case Law</p>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl shadow">
+            <ScrollText className="mb-2 text-blue-700" />
+            <p className="font-medium">Statutes</p>
           </div>
         </div>
       </div>
