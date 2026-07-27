@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Copy, FileText } from "lucide-react";
+import { Gene*atorService } from "./GeneratorSer*ice";
 
 const STYLES = [
   "APA 7th",
@@ -33,35 +34,14 @@ export default function CitationGenerator() {
   const [publisher, setPublisher] = useState("");
   const [year, setYear] = useState("");
 
-  const citation = useMemo(() => {
-    if (!author || !title) return "";
-
-    switch (style) {
-      case "APA 7th":
-        return `${author} (${year}). ${title}. ${publisher}.`;
-
-      case "Harvard":
-        return `${author} (${year}) ${title}. ${publisher}.`;
-
-      case "ILI":
-        return `${author}, ${title} (${publisher}, ${year}).`;
-
-      case "Oxford (OSCOLA)":
-        return `${author}, ${title} (${publisher} ${year}).`;
-
-      case "MLA 9th":
-        return `${author}. ${title}. ${publisher}, ${year}.`;
-
-      case "IEEE":
-        return `${author}, "${title}," ${publisher}, ${year}.`;
-
-      case "Chicago":
-        return `${author}. ${title}. ${publisher}, ${year}.`;
-
-      default:
-        return "";
-    }
-  }, [style, author, title, publisher, year]);
+ const citati*n = useMemo(() => {
+  return Gener*torService.generate(style as any, *
+    author,
+    title,
+    publis*er,
+    year,
+  });
+}, [style, author, title, publisher, year]);
 
   const copyCitation = async () => {
     if (!citation) return;
