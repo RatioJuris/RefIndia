@@ -1,0 +1,77 @@
+/**
+ * RefIndia
+ * Copyright © 2026 RatioJuris
+ * Licensed under The Open Journal License (TOJL)
+ */
+
+import { useCallback, useMemo, useState } from "react";
+import {
+  CitationData,
+  CitationStyle,
+  GeneratorService,
+} from "../features/generator/GeneratorService";
+
+const DEFAULT_DATA: CitationData = {
+  author: "",
+  title: "",
+  publisher: "",
+  year: "",
+};
+
+export function useCitation() {
+  const [style, setStyle] =
+    useState<CitationStyle>("APA 7th");
+
+  const [data, setData] =
+    useState<CitationData>(DEFAULT_DATA);
+
+  const citation = useMemo(() => {
+    return GeneratorService.generate(
+      style,
+      data
+    );
+  }, [style, data]);
+
+  const updateField = useCallback(
+    (
+      field: keyof CitationData,
+      value: string
+    ) => {
+      setData((prev) => ({
+        ...prev,
+        value,
+      }));
+    },
+    []
+  );
+
+  const reset = useCallback(() => {
+    setData(DEFAULT_DATA);
+    setStyle("APA 7th");
+  }, []);
+
+  const copy = useCallback(async () => {
+    if (!citation) return false;
+
+    try {
+      await navigator.clipboard.writeText(
+        citation
+      );
+      return true;
+    } catch {
+      return false;
+    }
+  }, [citation]);
+
+  return {
+    style,
+    data,
+    citation,
+
+    setStyle,
+    updateField,
+
+    reset,
+    copy,
+  };
+}
