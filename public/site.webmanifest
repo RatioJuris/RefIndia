@@ -1,14 +1,14 @@
 {
   "name": "RefIndia",
   "short_name": "RefIndia",
-  "description": "Indian Academic and Legal Citation Generator and Converter for APA, Harvard, ILI, OSCOLA, MLA, IEEE and Chicago styles.",
+  "description": "Indian Academic and Legal Citation Generator and Converter for APA, Harvard, ILI, OSCOLA, MLA, IEEE and Chicago citation styles.",
+  "lang": "en-IN",
   "start_url": "/refIndia/",
   "scope": "/refIndia/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#1E3A8A",
   "orientation": "portrait-primary",
-  "lang": "en-IN",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1E3A8A",
   "categories": [
     "education",
     "reference",
@@ -26,6 +26,13 @@
       "src": "favicon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
     }
   ]
 }
+``
