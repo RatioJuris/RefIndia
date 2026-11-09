@@ -1,125 +1,54 @@
+import { LEGAL_URL } from "../components/Layout";
+
 export default function About() {
   return (
-    <main className="min-h-screen bg-slate-50 py-12">
-      <div className="max-w-4xl mx-auto px-6">
-        <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
-          <h1 className="text-4xl font-bold text-slate-900 mb-6">
-            About RefIndia
-          </h1>
+    <div className="mx-auto max-w-3xl px-5 py-10">
+      <h1 className="text-3xl font-bold text-slate-900 md:text-4xl dark:text-white">About RefIndia</h1>
 
-          <p className="text-lg text-slate-700 leading-relaxed mb-6">
-            RefIndia is an open-source academic and legal citation
-            generator and converter developed under the RatioJuris
-            initiative. The platform is designed to help students,
-            researchers, academicians, legal professionals and
-            institutions generate accurate citations across multiple
-            internationally recognized citation styles.
+      <div className="card mt-8 space-y-8 p-6 text-slate-700 md:p-8 dark:text-slate-300">
+        <section>
+          <p className="text-lg">
+            RefIndia is a free, open-source citation generator for Indian legal and academic writing, developed by{" "}
+            <a className="text-brand-700 underline dark:text-saffron-400" href="https://ratiojuris.github.io/">RatioJuris</a>.
           </p>
-
-          <p className="text-slate-700 leading-relaxed mb-8">
-            RefIndia supports references for books, journal articles,
-            research papers, conference proceedings, theses,
-            dissertations, legal case laws, statutes, government
-            publications and web-based resources.
+          <p className="mt-3">
+            General-purpose citation tools handle books and journal articles well, but rarely Indian law reports such as SCC, AIR or SCC OnLine,
+            or Indian Acts. RefIndia combines the official Citation Style Language styles with its own formatter for Indian cases and statutes.
           </p>
+        </section>
 
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">
-              Supported Citation Styles
-            </h2>
+        <section>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Privacy</h2>
+          <p className="mt-2">
+            RefIndia runs entirely in your browser. There is no account, no server, no cookies and no analytics.
+            DOI and ISBN lookups are sent directly from your browser to doi.org, Open Library or Google Books.
+          </p>
+          <p className="mt-2">
+            <a className="text-brand-700 underline dark:text-saffron-400" href={`${LEGAL_URL}privacy/`}>Privacy Policy</a> ·{" "}
+            <a className="text-brand-700 underline dark:text-saffron-400" href={`${LEGAL_URL}terms/`}>Terms of Use</a> ·{" "}
+            <a className="text-brand-700 underline dark:text-saffron-400" href={`${LEGAL_URL}support/`}>Support</a>
+          </p>
+        </section>
 
-            <ul className="grid md:grid-cols-2 gap-3 text-slate-700">
-              <li>APA 7th Edition</li>
-              <li>Harvard Style</li>
-              <li>Indian Law Institute (ILI)</li>
-              <li>Oxford (OSCOLA)</li>
-              <li>MLA 9th Edition</li>
-              <li>IEEE Style</li>
-              <li>Chicago Style</li>
-            </ul>
-          </section>
+        <section>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Built with</h2>
+          <ul className="mt-2 list-disc space-y-1.5 pl-5">
+            <li><a className="underline" href="https://citation.js.org/">citation.js</a> and citeproc-js (MIT)</li>
+            <li>Styles from the <a className="underline" href="https://citationstyles.org/">Citation Style Language</a> project (CC BY-SA 3.0)</li>
+            <li>Metadata from <a className="underline" href="https://www.doi.org/">doi.org</a>, <a className="underline" href="https://openlibrary.org/">Open Library</a> and <a className="underline" href="https://books.google.com/">Google Books</a></li>
+            <li>React, Vite, Tailwind CSS and Lucide icons</li>
+          </ul>
+        </section>
 
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">
-              Supported Source Types
-            </h2>
-
-            <ul className="grid md:grid-cols-2 gap-3 text-slate-700">
-              <li>Books</li>
-              <li>Journal Articles</li>
-              <li>Research Papers</li>
-              <li>Conference Papers</li>
-              <li>Theses</li>
-              <li>Dissertations</li>
-              <li>Case Laws</li>
-              <li>Statutes & Legislation</li>
-              <li>Government Reports</li>
-              <li>Web Resources</li>
-            </ul>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">
-              Project Vision
-            </h2>
-
-            <p className="text-slate-700 leading-relaxed">
-              RefIndia seeks to provide an accessible, transparent and
-              reliable citation platform for academic and legal
-              research. The project aims to support higher education,
-              scholarly publishing and legal writing by simplifying the
-              process of reference management while maintaining
-              compliance with established citation standards.
-            </p>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">
-              Future Integrations
-            </h2>
-
-            <ul className="grid md:grid-cols-2 gap-3 text-slate-700">
-              <li>DOI Metadata Lookup</li>
-              <li>Crossref Integration</li>
-              <li>Google Books Support</li>
-              <li>Open Library Integration</li>
-              <li>Shodhganga Compatibility</li>
-              <li>UGC CARE Resources</li>
-              <li>BibTeX Export</li>
-              <li>RIS Export</li>
-              <li>Citation Collections</li>
-            </ul>
-          </section>
-
-          <section className="border-t pt-8">
-            <h2 className="text-2xl font-semibold mb-4">
-              License
-            </h2>
-
-            <p className="text-slate-700 leading-relaxed">
-              RefIndia is licensed under the
-              <strong> The Open Journal License (TOJL)</strong>.
-            </p>
-
-            <p className="text-slate-700 mt-4">
-              Copyright © 2026 RatioJuris.
-            </p>
-
-            <p className="text-slate-500 text-sm mt-4">
-              Website:
-              {" "}
-              <a
-                href="https://ratiojuris.github.io/refIndia/"
-                className="text-blue-700 hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                ratiojuris.github.io/refIndia
-              </a>
-            </p>
-          </section>
-        </div>
+        <section>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Licence</h2>
+          <p className="mt-2">
+            RefIndia is released under the MIT licence. The source code is on{" "}
+            <a className="text-brand-700 underline dark:text-saffron-400" href="https://github.com/RatioJuris/RefIndia">GitHub</a>, where
+            suggestions and corrections are welcome.
+          </p>
+        </section>
       </div>
-    </main>
+    </div>
   );
 }

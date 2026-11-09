@@ -1,220 +1,126 @@
 import { useState } from "react";
-import {
-  Search,
-  Link,
-  BookOpen,
-  Hash,
-  Copy,
-  Trash2,
-} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { BookOpen, Hash, Loader2, PencilLine, Search } from "lucide-react";
+import CitationOutput from "../components/CitationOutput";
+import StylePicker from "../components/StylePicker";
+import { formatCsl } from "../lib/engine";
+import { lookupDoi, lookupIsbn, type LookupResult } from "../lib/lookup";
+import { fromCsl } from "../lib/sources";
+import { getStyle } from "../lib/styles";
 
-type LookupType = "DOI" | "ISBN" | "URL";
+type Mode = "doi" | "isbn";
+
+const MODES: { id: Mode; label: string; icon: typeof Hash; placeholder: string; help: string }[] = [
+  { id: "doi", label: "DOI", icon: Hash, placeholder: "10.1038/nature14539 or https://doi.org/…", help: "Journal articles, conference papers, books and datasets with a DOI. Searched through doi.org (Crossref, DataCite and others)." },
+  { id: "isbn", label: "ISBN", icon: BookOpen, placeholder: "978-93-5035-030-0", help: "Books. Searched in Open Library, then Google Books." },
+];
+
+const names = (list?: { family?: string; given?: string; literal?: string }[]) =>
+  (list ?? []).map((n) => n.literal ?? [n.given, n.family].filter(Boolean).join(" ")).join("; ");
 
 export default function Lookup() {
-  const [type, setType] = useState<LookupType>("DOI");
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<Mode>("doi");
   const [query, setQuery] = useState("");
-  const [result, setResult] = useState("");
+  const [styleId, setStyleId] = useState("apa");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<LookupResult | null>(null);
 
-  const handleLookup = async () => {
+  const current = MODES.find((m) => m.id === mode)!;
+  const style = getStyle(styleId);
+
+  const run = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!query.trim()) return;
-
-    // TODO:
-    // Replace with actual services:
-    // Crossref
-    // Open Library
-    // Google Books
-    // DOI Registry
-    // Shodhganga
-
-    setResult(
-      JSON.stringify(
-        {
-          source: type,
-          query,
-          title: "Sample Publication Title",
-          author: "Sample Author",
-          year: "2026",
-          publisher: "Sample Publisher",
-        },
-        null,
-        2
-      )
-    );
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      setResult(mode === "doi" ? await lookupDoi(query) : await lookupIsbn(query));
+    } catch (err) {
+      setError(err instanceof Error && err.message ? err.message : "The lookup failed. Check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const clearForm = () => {
-    setQuery("");
-    setResult("");
-  };
-
-  const copyResult = async () => {
-    if (!result) return;
-    await navigator.clipboard.writeText(result);
-  };
+  const item = result?.item as Record<string, any> | undefined;
+  let formatted = null;
+  try {
+    formatted = item ? formatCsl([item], style)[0] : null;
+  } catch {
+    formatted = null;
+  }
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10">
-      <div className="max-w-5xl mx-auto px-6">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-slate-900">
-            Metadata Lookup
-          </h1>
+    <div className="mx-auto max-w-4xl px-5 py-10">
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 md:text-4xl dark:text-white">Lookup</h1>
+        <p className="mt-2 text-slate-600 dark:text-slate-400">
+          Find a publication by its DOI or ISBN, then cite it in any style or edit the details.
+        </p>
+      </header>
 
-          <p className="mt-3 text-slate-600">
-            Retrieve publication metadata using DOI, ISBN,
-            or webpage URLs.
-          </p>
+      <form onSubmit={run} className="card p-6">
+        <div className="mb-5 flex gap-2" role="tablist" aria-label="Identifier type">
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              role="tab"
+              aria-selected={m.id === mode}
+              onClick={() => { setMode(m.id); setResult(null); setError(null); }}
+              className={`btn ${m.id === mode ? "bg-brand-700 text-white dark:bg-saffron-500 dark:text-slate-950" : "border border-slate-300 dark:border-slate-700"}`}
+            >
+              <m.icon size={16} aria-hidden /> {m.label}
+            </button>
+          ))}
         </div>
-
-        {/* Lookup Card */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
-            <button
-              onClick={() => setType("DOI")}
-              className={`rounded-xl p-4 border ${
-                type === "DOI"
-                  ? "bg-blue-700 text-white border-blue-700"
-                  : "hover:bg-slate-50"
-              }`}
-            >
-              <Hash className="mx-auto mb-2" />
-              DOI Lookup
-            </button>
-
-            <button
-              onClick={() => setType("ISBN")}
-              className={`rounded-xl p-4 border ${
-                type === "ISBN"
-                  ? "bg-blue-700 text-white border-blue-700"
-                  : "hover:bg-slate-50"
-              }`}
-            >
-              <BookOpen className="mx-auto mb-2" />
-              ISBN Lookup
-            </button>
-
-            <button
-              onClick={() => setType("URL")}
-              className={`rounded-xl p-4 border ${
-                type === "URL"
-                  ? "bg-blue-700 text-white border-blue-700"
-                  : "hover:bg-slate-50"
-              }`}
-            >
-              <Link className="mx-auto mb-2" />
-              URL Metadata
-            </button>
-          </div>
-
-          <label className="block mb-2 font-medium">
-            {type} Identifier
-          </label>
-
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={
-              type === "DOI"
-                ? "10.1000/xyz123"
-                : type === "ISBN"
-                ? "9781234567890"
-                : "https://example.com/article"
-            }
-            className="w-full border rounded-lg p-3"
-          />
-
-          <div className="flex flex-wrap gap-4 mt-6">
-            <button
-              onClick={handleLookup}
-              className="flex items-center gap-2 bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-800"
-            >
-              <Search size={18} />
-              Lookup
-            </button>
-
-            <button
-              onClick={clearForm}
-              className="flex items-center gap-2 border px-6 py-3 rounded-lg hover:bg-slate-100"
-            >
-              <Trash2 size={18} />
-              Clear
-            </button>
-          </div>
+        <label htmlFor="query" className="field-label">{current.label}</label>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <input id="query" className="field" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={current.placeholder} autoComplete="off" />
+          <button type="submit" className="btn-primary sm:w-36" disabled={loading || !query.trim()}>
+            {loading ? <Loader2 size={16} className="animate-spin" aria-hidden /> : <Search size={16} aria-hidden />}
+            {loading ? "Searching" : "Look up"}
+          </button>
         </div>
+        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{current.help}</p>
+      </form>
 
-        {/* Results */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mt-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold">
-              Metadata Result
-            </h2>
+      <div aria-live="polite">
+        {error && (
+          <p className="mt-6 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">{error}</p>
+        )}
 
-            {result && (
-              <button
-                onClick={copyResult}
-                className="flex items-center gap-2 text-blue-700 hover:text-blue-900"
-              >
-                <Copy size={18} />
-                Copy
+        {item && (
+          <section className="card mt-6 p-6">
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase">Found in {result!.source}</p>
+                <h2 className="mt-1 font-serif text-xl text-slate-900 dark:text-white">{String(item.title ?? "Untitled")}</h2>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                  {[names(item.author), Array.isArray(item["container-title"]) ? item["container-title"][0] : item["container-title"], item.publisher, item.issued?.["date-parts"]?.[0]?.[0]]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              </div>
+              <button type="button" className="btn-secondary" onClick={() => navigate("/generator", { state: fromCsl(item) })}>
+                <PencilLine size={16} aria-hidden /> Edit in Generator
               </button>
-            )}
-          </div>
-
-          {result ? (
-            <pre className="bg-slate-100 p-4 rounded-lg overflow-x-auto text-sm">
-              {result}
-            </pre>
-          ) : (
-            <p className="text-slate-500">
-              Retrieved metadata will appear here.
-            </p>
-          )}
-        </div>
-
-        {/* Supported Sources */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mt-8">
-          <h2 className="text-2xl font-semibold mb-6">
-            Supported Sources
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-slate-100 p-4 rounded-lg">
-              DOI Registry
             </div>
-
-            <div className="bg-slate-100 p-4 rounded-lg">
-              Crossref
+            <StylePicker value={styleId} onChange={setStyleId} />
+            <div className="mt-5">
+              <CitationOutput result={formatted} style={style} placeholder="This record could not be formatted in this style." />
             </div>
-
-            <div className="bg-slate-100 p-4 rounded-lg">
-              Open Library
-            </div>
-
-            <div className="bg-slate-100 p-4 rounded-lg">
-              Google Books
-            </div>
-
-            <div className="bg-slate-100 p-4 rounded-lg">
-              Shodhganga
-            </div>
-
-            <div className="bg-slate-100 p-4 rounded-lg">
-              UGC CARE Resources
-            </div>
-          </div>
-        </div>
-
-        {/* Notice */}
-        <div className="mt-8 p-5 bg-amber-50 border border-amber-200 rounded-xl">
-          <p className="text-sm text-amber-900">
-            Metadata is retrieved from external bibliographic
-            databases and should be verified before submission
-            to journals, universities, publishers, or courts.
-          </p>
-        </div>
+          </section>
+        )}
       </div>
-    </main>
+
+      <p className="mt-8 text-xs text-slate-500 dark:text-slate-400">
+        Lookups go directly from your browser to doi.org, Open Library or Google Books. RefIndia has no server and keeps no record of your searches.
+        Metadata can be incomplete; check it before you submit.
+      </p>
+    </div>
   );
 }

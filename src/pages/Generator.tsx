@@ -1,327 +1,188 @@
-import { useMemo, useState } from "react";
-import {
-  BookOpen,
-  FileText,
-  GraduationCap,
-  Scale,
-  FileBadge,
-  ScrollText,
-  Copy,
-} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Download, Eraser, Layers } from "lucide-react";
+import CitationOutput from "../components/CitationOutput";
+import StylePicker from "../components/StylePicker";
+import CopyButton from "../components/CopyButton";
+import { exportAs, formatForm, type Formatted } from "../lib/engine";
+import { download } from "../lib/clipboard";
+import { getSource, missingRequired, SOURCE_TYPES, toCsl, type FormValues, type SourceId } from "../lib/sources";
+import { getStyle, STYLES } from "../lib/styles";
 
-const SOURCE_TYPES = [
-  "Book",
-  "Journal Article",
-  "Research Paper",
-  "Conference Paper",
-  "Thesis",
-  "Dissertation",
-  "Case Law",
-  "Statute",
-  "Government Report",
-  "Web Resource",
-];
+interface Prefill {
+  source?: SourceId;
+  values?: FormValues;
+}
 
-const CITATION_STYLES = [
-  "APA 7th",
-  "Harvard",
-  "ILI",
-  "Oxford (OSCOLA)",
-  "MLA 9th",
-  "IEEE",
-  "Chicago",
-];
+const GROUPS = ["Legal", "Academic", "Other"] as const;
+
+function safeFormat(sourceId: string, values: FormValues, styleId: string): Formatted | null {
+  try {
+    return formatForm(sourceId, values, getStyle(styleId));
+  } catch {
+    return null;
+  }
+}
 
 export default function Generator() {
-  const [sourceType, setSourceType] = useState("Book");
-  const [style, setStyle] = useState("APA 7th");
+  const location = useLocation();
+  const prefill = (location.state ?? {}) as Prefill;
 
-  const [author, setAuthor] = useState("");
-  const [title, setTitle] = useState("");
-  const [publisher, setPublisher] = useState("");
-  const [journal, setJournal] = useState("");
-  const [year, setYear] = useState("");
-  const [volume, setVolume] = useState("");
-  const [issue, setIssue] = useState("");
-  const [pages, setPages] = useState("");
+  const [sourceId, setSourceId] = useState<SourceId>(prefill.source ?? "case");
+  const [styleId, setStyleId] = useState("ili");
+  const [values, setValues] = useState<FormValues>(prefill.values ?? {});
+  const [compare, setCompare] = useState(false);
 
-  const citation = useMemo(() => {
-    if (!author || !title) return "";
-
-    switch (style) {
-      case "APA 7th":
-        return `${author} (${year}). ${title}. ${
-          journal || publisher
-        }. ${volume ? `${volume}` : ""}${
-          issue ? `(${issue})` : ""
-        }${pages ? `, ${pages}` : ""}.`;
-
-      case "Harvard":
-        return `${author} (${year}) ${title}. ${
-          journal || publisher
-        }.`;
-
-      case "ILI":
-        return `${author}, ${title} (${publisher || journal}, ${year}).`;
-
-      case "Oxford (OSCOLA)":
-        return `${author}, ${title} (${publisher || journal} ${year}).`;
-
-      case "MLA 9th":
-        return `${author}. ${title}. ${
-          publisher || journal
-        }, ${year}.`;
-
-      case "IEEE":
-        return `${author}, "${title}," ${
-          journal || publisher
-        }, ${year}.`;
-
-      case "Chicago":
-        return `${author}. ${title}. ${
-          publisher || journal
-        }, ${year}.`;
-
-      default:
-        return "";
+  useEffect(() => {
+    if (prefill.source) {
+      setSourceId(prefill.source);
+      setValues(prefill.values ?? {});
     }
-  }, [
-    author,
-    title,
-    publisher,
-    journal,
-    year,
-    volume,
-    issue,
-    pages,
-    style,
-  ]);
+  }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const copyCitation = async () => {
-    if (!citation) return;
-    await navigator.clipboard.writeText(citation);
-    alert("Citation copied successfully.");
+  const source = getSource(sourceId);
+  const style = getStyle(styleId);
+  const missing = missingRequired(source, values);
+
+  const result = useMemo(
+    () => (missing.length ? null : safeFormat(sourceId, values, styleId)),
+    [sourceId, values, styleId, missing.length],
+  );
+
+  const comparison = useMemo(
+    () =>
+      compare && !missing.length
+        ? STYLES.map((s) => ({ style: s, result: safeFormat(sourceId, values, s.id) }))
+        : [],
+    [compare, sourceId, values, missing.length],
+  );
+
+  const setField = (key: string, value: string) => setValues((prev) => ({ ...prev, [key]: value }));
+
+  const exportFile = (format: "bibtex" | "ris") => {
+    const content = exportAs([toCsl(source, values)], format);
+    download(format === "bibtex" ? "refindia.bib" : "refindia.ris", content);
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10">
-      <div className="max-w-6xl mx-auto px-6">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-slate-900">
-            Citation Generator
-          </h1>
+    <div className="mx-auto max-w-6xl px-5 py-10">
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 md:text-4xl dark:text-white">Citation Generator</h1>
+        <p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-400">
+          Choose what you are citing and the style you need. The citation updates as you type.
+        </p>
+      </header>
 
-          <p className="mt-3 text-slate-600">
-            Generate academic and legal citations in APA, Harvard,
-            ILI, Oxford (OSCOLA), MLA, IEEE and Chicago styles.
-          </p>
-        </div>
-
-        {/* Form */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <label className="block mb-2 font-medium">
-                Resource Type
-              </label>
-
-              <select
-                value={sourceType}
-                onChange={(e) => setSourceType(e.target.value)}
-                className="w-full border rounded-lg p-3"
-              >
-                {SOURCE_TYPES.map((item) => (
-                  <option key={item}>{item}</option>
-                ))}
-              </select>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
+        <section className="card p-6" aria-label="Source details">
+          <fieldset className="mb-6">
+            <legend className="field-label">What are you citing?</legend>
+            <div className="space-y-3">
+              {GROUPS.map((group) => (
+                <div key={group} className="flex flex-wrap items-center gap-2">
+                  <span className="w-20 text-xs font-semibold tracking-wider text-slate-400 uppercase">{group}</span>
+                  {SOURCE_TYPES.filter((s) => s.group === group).map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      aria-pressed={s.id === sourceId}
+                      onClick={() => setSourceId(s.id)}
+                      className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
+                        s.id === sourceId
+                          ? "border-saffron-500 bg-saffron-500/10 text-saffron-600 dark:text-saffron-400"
+                          : "border-slate-300 text-slate-700 hover:border-slate-400 dark:border-slate-700 dark:text-slate-300"
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              ))}
             </div>
+          </fieldset>
 
-            <div>
-              <label className="block mb-2 font-medium">
-                Citation Style
-              </label>
-
-              <select
-                value={style}
-                onChange={(e) => setStyle(e.target.value)}
-                className="w-full border rounded-lg p-3"
-              >
-                {CITATION_STYLES.map((item) => (
-                  <option key={item}>{item}</option>
-                ))}
-              </select>
-            </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {source.fields.map((field) => {
+              const id = `f-${field.key}`;
+              const common = {
+                id,
+                value: values[field.key] ?? "",
+                placeholder: field.placeholder,
+                className: "field",
+                "aria-describedby": field.hint ? `${id}-hint` : undefined,
+              };
+              return (
+                <div key={field.key} className={field.wide || field.multiline ? "sm:col-span-2" : ""}>
+                  <label htmlFor={id} className="field-label">
+                    {field.label}
+                    {field.required && <span className="text-saffron-600"> *</span>}
+                  </label>
+                  {field.multiline ? (
+                    <textarea {...common} rows={3} onChange={(e) => setField(field.key, e.target.value)} />
+                  ) : (
+                    <input {...common} type={field.type ?? "text"} onChange={(e) => setField(field.key, e.target.value)} />
+                  )}
+                  {field.hint && (
+                    <p id={`${id}-hint`} className="mt-1 text-xs text-slate-500 dark:text-slate-400">{field.hint}</p>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 mt-6">
-            <div>
-              <label className="block mb-2 font-medium">
-                Author / Editor
-              </label>
-
-              <input
-                type="text"
-                value={author}
-                onChange={(e) => setAuthor(e.target.value)}
-                className="w-full border rounded-lg p-3"
-                placeholder="Enter author name"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">
-                Year
-              </label>
-
-              <input
-                type="number"
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-                className="w-full border rounded-lg p-3"
-                placeholder="2026"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block mb-2 font-medium">
-                Title
-              </label>
-
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full border rounded-lg p-3"
-                placeholder="Enter title"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">
-                Publisher / Institution
-              </label>
-
-              <input
-                type="text"
-                value={publisher}
-                onChange={(e) => setPublisher(e.target.value)}
-                className="w-full border rounded-lg p-3"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">
-                Journal
-              </label>
-
-              <input
-                type="text"
-                value={journal}
-                onChange={(e) => setJournal(e.target.value)}
-                className="w-full border rounded-lg p-3"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">
-                Volume
-              </label>
-
-              <input
-                type="text"
-                value={volume}
-                onChange={(e) => setVolume(e.target.value)}
-                className="w-full border rounded-lg p-3"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">
-                Issue
-              </label>
-
-              <input
-                type="text"
-                value={issue}
-                onChange={(e) => setIssue(e.target.value)}
-                className="w-full border rounded-lg p-3"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block mb-2 font-medium">
-                Pages
-              </label>
-
-              <input
-                type="text"
-                value={pages}
-                onChange={(e) => setPages(e.target.value)}
-                className="w-full border rounded-lg p-3"
-                placeholder="1-25"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Output */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mt-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold">
-              Generated Citation
-            </h2>
-
-            {citation && (
-              <button
-                onClick={copyCitation}
-                className="flex items-center gap-2 text-blue-700"
-              >
-                <Copy size={18} />
-                Copy
-              </button>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button type="button" className="btn-secondary" onClick={() => setValues({})}>
+              <Eraser size={16} aria-hidden /> Clear
+            </button>
+            {!source.legal && !missing.length && (
+              <>
+                <button type="button" className="btn-secondary" onClick={() => exportFile("bibtex")}>
+                  <Download size={16} aria-hidden /> BibTeX
+                </button>
+                <button type="button" className="btn-secondary" onClick={() => exportFile("ris")}>
+                  <Download size={16} aria-hidden /> RIS
+                </button>
+              </>
             )}
           </div>
+        </section>
 
-          {citation ? (
-            <div className="bg-slate-100 p-4 rounded-lg break-words">
-              {citation}
-            </div>
-          ) : (
-            <p className="text-slate-500">
-              Complete the form to generate a citation.
+        <section className="card h-fit p-6 lg:sticky lg:top-24" aria-label="Citation" aria-live="polite">
+          <StylePicker value={styleId} onChange={setStyleId} />
+          <p className="mt-2 mb-5 text-xs text-slate-500 dark:text-slate-400">{style.description}</p>
+          <CitationOutput
+            result={result}
+            style={style}
+            placeholder={missing.length ? `Still needed: ${missing.join(", ")}.` : undefined}
+          />
+          {source.legal && (
+            <p className="mt-5 rounded-lg bg-saffron-500/10 px-3 py-2 text-xs text-saffron-600 dark:text-saffron-400">
+              Indian cases and statutes are formatted by RefIndia's legal formatter, following ILI and OSCOLA conventions.
             </p>
           )}
-        </div>
-
-        {/* Resource Types */}
-        <div className="grid md:grid-cols-5 gap-5 mt-8">
-          <div className="bg-white p-4 rounded-xl shadow">
-            <BookOpen className="mb-2 text-blue-700" />
-            <p className="font-medium">Books</p>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl shadow">
-            <FileText className="mb-2 text-blue-700" />
-            <p className="font-medium">Journals</p>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl shadow">
-            <GraduationCap className="mb-2 text-blue-700" />
-            <p className="font-medium">Theses</p>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl shadow">
-            <Scale className="mb-2 text-blue-700" />
-            <p className="font-medium">Case Law</p>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl shadow">
-            <ScrollText className="mb-2 text-blue-700" />
-            <p className="font-medium">Statutes</p>
-          </div>
-        </div>
+          <button type="button" className="btn-ghost mt-4" onClick={() => setCompare((c) => !c)} disabled={!!missing.length}>
+            <Layers size={16} aria-hidden /> {compare ? "Hide other styles" : "Compare all styles"}
+          </button>
+        </section>
       </div>
-    </main>
+
+      {comparison.length > 0 && (
+        <section className="card mt-6 divide-y divide-slate-200 dark:divide-slate-800" aria-label="All styles">
+          {comparison.map(({ style: s, result: r }) =>
+            r ? (
+              <div key={s.id} className="grid gap-2 p-5 md:grid-cols-[10rem_1fr_auto] md:items-start">
+                <strong className="text-sm text-brand-700 dark:text-saffron-400">{s.label}</strong>
+                <p className="citation font-serif" dangerouslySetInnerHTML={{ __html: r.bibliography ?? r.citation }} />
+                <CopyButton html={r.bibliography ?? r.citation} />
+              </div>
+            ) : null,
+          )}
+        </section>
+      )}
+
+      <p className="mt-8 text-center text-xs text-slate-500 dark:text-slate-400">
+        Always check citations against the rules of your university, journal or court.
+      </p>
+    </div>
   );
 }

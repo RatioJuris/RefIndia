@@ -1,178 +1,87 @@
+import { Link } from "react-router-dom";
+import { STYLES } from "../lib/styles";
+
+const REPORTERS = [
+  ["Supreme Court Cases", "(2017) 10 SCC 1", "Year in round brackets, then volume, SCC and page"],
+  ["All India Reporter", "AIR 1973 SC 1461", "AIR, year, court abbreviation and page"],
+  ["Neutral citation (Supreme Court)", "2023 INSC 1", "Year, INSC and number"],
+  ["SCC OnLine", "2019 SCC OnLine Del 1234", "Year, SCC OnLine, court and number"],
+  ["Supreme Court Reports", "[1973] Supp SCR 1", "Year in square brackets, then volume or Supp, SCR and page"],
+];
+
+const FAQ = [
+  ["Is RefIndia free?", "Yes. RefIndia is free and open source under the MIT licence, with no account and no limits."],
+  ["Are the citations guaranteed to be correct?", "No tool can guarantee that. RefIndia follows the published styles closely, but universities, journals and courts often have their own rules. Always check the final citation against the rules you have been given."],
+  ["Which ILI rules does RefIndia follow?", "Articles, books, chapters and theses use the Citation Style Language style for the Journal of the Indian Law Institute. Cases and statutes are formatted by RefIndia following the usual ILI forms, for example “Kesavananda Bharati v. State of Kerala, (1973) 4 SCC 225.”"],
+  ["Why is there no bibliography in ILI?", "ILI is a footnote style. Use the footnote form for each citation."],
+  ["Can I convert a citation I copied from a document?", "Not reliably, so RefIndia does not try. Free-text citations are ambiguous. Use the DOI or ISBN, or export BibTeX or RIS from your reference manager or the publisher's website, and paste that into the Converter."],
+  ["Do you store what I type?", "No. RefIndia runs entirely in your browser and has no server. Lookups go straight from your browser to doi.org, Open Library or Google Books."],
+];
+
 export default function Help() {
   return (
-    <main className="min-h-screen bg-slate-50 py-12">
-      <div className="max-w-4xl mx-auto px-6">
-        <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
-          <h1 className="text-4xl font-bold text-slate-900 mb-6">
-            Help & User Guide
-          </h1>
+    <div className="mx-auto max-w-4xl px-5 py-10">
+      <h1 className="text-3xl font-bold text-slate-900 md:text-4xl dark:text-white">Help</h1>
 
-          <p className="text-slate-700 leading-relaxed mb-8">
-            RefIndia helps students, researchers, academicians and legal
-            professionals generate and convert citations for academic and
-            legal publications. This guide explains how to use the platform
-            effectively.
-          </p>
+      <section className="card mt-8 p-6 md:p-8">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Getting started</h2>
+        <ol className="mt-4 list-decimal space-y-2 pl-5 text-slate-700 dark:text-slate-300">
+          <li>Open the <Link className="text-brand-700 underline dark:text-saffron-400" to="/generator">Generator</Link> and choose what you are citing.</li>
+          <li>Fill in the fields marked with an asterisk. The citation appears as soon as they are complete.</li>
+          <li>Choose a style. Use <strong>Compare all styles</strong> to see every style at once.</li>
+          <li>Click <strong>Copy</strong>. Italics are kept when you paste into Word or Google Docs.</li>
+        </ol>
+        <p className="mt-4 text-slate-700 dark:text-slate-300">
+          Have a DOI or ISBN? Use <Link className="text-brand-700 underline dark:text-saffron-400" to="/lookup">Lookup</Link> to fill in the details automatically.
+        </p>
+      </section>
 
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">
-              Getting Started
-            </h2>
-
-            <ol className="list-decimal list-inside space-y-3 text-slate-700">
-              <li>Open the Citation Generator.</li>
-              <li>Select the source type.</li>
-              <li>Choose a citation style.</li>
-              <li>Enter publication details.</li>
-              <li>Click <strong>Generate Citation</strong>.</li>
-              <li>Copy or export the generated reference.</li>
-            </ol>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">
-              Supported Citation Styles
-            </h2>
-
-            <ul className="list-disc list-inside space-y-2 text-slate-700">
-              <li>APA 7th Edition</li>
-              <li>Harvard Style</li>
-              <li>Indian Law Institute (ILI)</li>
-              <li>Oxford Standard for Citation of Legal Authorities (OSCOLA)</li>
-              <li>MLA 9th Edition</li>
-              <li>IEEE Style</li>
-              <li>Chicago Style</li>
-            </ul>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">
-              Supported Resource Types
-            </h2>
-
-            <ul className="grid md:grid-cols-2 gap-2 text-slate-700">
-              <li>Books</li>
-              <li>Journal Articles</li>
-              <li>Research Papers</li>
-              <li>Conference Papers</li>
-              <li>Theses</li>
-              <li>Dissertations</li>
-              <li>Case Laws</li>
-              <li>Statutes</li>
-              <li>Government Reports</li>
-              <li>Web Resources</li>
-            </ul>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">
-              Citation Converter
-            </h2>
-
-            <p className="text-slate-700 leading-relaxed">
-              Use the Citation Converter to transform references from one
-              supported style into another. Select the original citation
-              style, choose the target style and review the converted output.
-            </p>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">
-              Frequently Asked Questions
-            </h2>
-
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg">
-                  Is RefIndia free to use?
-                </h3>
-                <p className="text-slate-700">
-                  Yes. RefIndia is freely available for educational,
-                  academic and research purposes.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg">
-                  Are generated citations guaranteed to be correct?
-                </h3>
-                <p className="text-slate-700">
-                  RefIndia assists in generating citations, but users should
-                  always verify references according to the requirements of
-                  their institution, journal or court.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg">
-                  Does RefIndia support legal citation formats?
-                </h3>
-                <p className="text-slate-700">
-                  Yes. RefIndia supports both ILI and OSCOLA styles for legal
-                  research and legal writing.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg">
-                  Can I use RefIndia for dissertations and theses?
-                </h3>
-                <p className="text-slate-700">
-                  Yes. RefIndia includes support for theses, dissertations,
-                  books, journals and research papers.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">
-              Future Features
-            </h2>
-
-            <ul className="list-disc list-inside space-y-2 text-slate-700">
-              <li>DOI Lookup</li>
-              <li>ISBN Metadata Search</li>
-              <li>Crossref Integration</li>
-              <li>Google Books Integration</li>
-              <li>Shodhganga Support</li>
-              <li>BibTeX Export</li>
-              <li>RIS Export</li>
-              <li>Citation Collection Manager</li>
-            </ul>
-          </section>
-
-          <section className="border-t pt-8">
-            <h2 className="text-2xl font-semibold mb-4">
-              Support
-            </h2>
-
-            <p className="text-slate-700">
-              RefIndia is maintained by RatioJuris.
-            </p>
-
-            <p className="mt-3 text-slate-700">
-              Website:{" "}
-              <a
-                href="https://ratiojuris.github.io/refIndia/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-700 hover:underline"
-              >
-                ratiojuris.github.io/refIndia
-              </a>
-            </p>
-
-            <p className="mt-4 text-sm text-slate-500">
-              Licensed under The Open Journal License (TOJL).
-            </p>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Copyright © 2026 RatioJuris.
-            </p>
-          </section>
+      <section className="card mt-6 p-6 md:p-8">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Citing Indian cases</h2>
+        <p className="mt-3 text-slate-700 dark:text-slate-300">
+          Enter the case name and the citation exactly as printed in the law report. RefIndia writes “v”, “v.” or “vs” the way each style requires.
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="text-xs tracking-wider text-slate-500 uppercase">
+              <tr><th className="py-2 pr-4">Report</th><th className="py-2 pr-4">Example</th><th className="py-2">Form</th></tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+              {REPORTERS.map(([report, example, form]) => (
+                <tr key={report}>
+                  <td className="py-2.5 pr-4">{report}</td>
+                  <td className="py-2.5 pr-4 font-mono whitespace-nowrap">{example}</td>
+                  <td className="py-2.5 text-slate-600 dark:text-slate-400">{form}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
-    </main>
+      </section>
+
+      <section className="card mt-6 p-6 md:p-8">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Styles</h2>
+        <dl className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-[10rem_1fr]">
+          {STYLES.map((s) => (
+            <div key={s.id} className="contents">
+              <dt className="font-semibold text-slate-900 dark:text-white">{s.label}</dt>
+              <dd className="text-slate-600 dark:text-slate-400">{s.description}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <section className="card mt-6 p-6 md:p-8">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Questions</h2>
+        <div className="mt-4 space-y-3">
+          {FAQ.map(([q, a]) => (
+            <details key={q} className="rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-800">
+              <summary className="cursor-pointer font-medium text-slate-900 dark:text-white">{q}</summary>
+              <p className="mt-2 text-slate-600 dark:text-slate-400">{a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
